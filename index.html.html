@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Love Vita Fania ❤️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #ff6b8a; /* pink lebih kuat */
+            --secondary: #ff4d7a;
+            --text: #4a4a4a;
+            --glass: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Use iOS San Francisco when available (system font stack) */
+        body {
+            font-family: -apple-system, "SF Pro Text", "SF Pro Display", "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            /* Pink gradient yang lebih terlihat */
+            background: linear-gradient(120deg, #ffd1ea 0%, #ff7aa7 45%, #ff5b8f 100%);
+            background-image: linear-gradient(to top, #ff7aa7 0%, #ff5b8f 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto; /* izinkan scroll vertikal */
+            color: var(--text);
+        }
+
+        /* Container HP */
+        .phone-container {
+            width: 380px;
+            height: 700px;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 40px;
+            border: 2px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow-y: auto; /* scroll di dalam phone-container jika konten melebihi tinggi */
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Navigasi Titik di atas */
+        .notch {
+            width: 100px;
+            height: 25px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 0 0 15px 15px;
+            margin-bottom: 20px;
+        }
+
+        /* --- SECTION 1: LOCK SCREEN --- */
+        #lock-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+            position: absolute;
+            top: 0;
+            z-index: 10;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .clock {
+            font-size: 4rem;
+            font-weight: 700; /* tebal */
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .date {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 50px;
+            font-weight: 600; /* tebal */
+        }
+
+        .passcode-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .passcode-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            transition: background 0.2s;
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .num-btn {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .num-btn:active {
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* --- SECTION 2: CONTENT (MUSIC & GALLERY) --- */
+        #content-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding-top: 20px;
+            animation: fadeIn 1s forwards;
+        }
+
+        /* Music Player UI */
+        .music-player {
+            background: rgba(255, 255, 255, 0.6);
+            width: 90%;
+            padding: 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .album-cover {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            /* pastikan selalu berbentuk lingkaran (tidak meregang) */
+            aspect-ratio: 1 / 1;
+            min-width: 50px;
+            min-height: 50px;
+            flex: 0 0 50px;
+        }
+
+        .album-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 50%; /* jaga agar gambar juga bulat */
+        }
+        
+        /* spinning state */
+        .album-cover.playing {
+            animation: spin 4s linear infinite;
+        }
+
+        .album-cover::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 15px;
+            height: 15px;
+            background: #fff;
+            border-radius: 50%;
+            transition: opacity 0.2s;
+        }
+        .album-cover.playing::after { opacity: 0; }
+
+        .song-info h4 { font-size: 0.9rem; margin-bottom: 2px; }
+        .song-info .from-text {
+            font-size: 0.75rem;
+            color: var(--secondary);
+            margin-top: 2px;
+            font-weight: 600;
+        }
+
+        /* Hint text shown on the first (gallery) slide only */
+        .gallery-hint {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .message-sub {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        /* Gallery Stack */
+        .gallery-container {
+            position: relative;
+            width: 280px;
+            height: 350px;
+            margin-bottom: 20px;
+        }
+
+        .photo-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: all 0.5s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 10px;
+            pointer-events: none;
+        }
+
+        .photo-card p {
+            margin-top: 15px;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.4rem;
+            color: var(--text); /* lebih kontras di atas latar terang */
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        /* Pesan Terakhir */
+        .message-box {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 20px;
+            border-radius: 20px;
+            width: 90%;
+            text-align: center;
+            display: none;
+        }
+
+        /* Tombol Next */
+        .next-btn {
+            background: #fff;
+            color: #ff9a9e;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 50px;
+            margin-top: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Back button (only visible during message view) */
+        .back-btn {
+            position: absolute;
+            bottom: 18px;
+            right: 18px;
+            background: rgba(255,255,255,0.95);
+            color: #ff4d7a;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+            display: none; /* hidden by default */
+            z-index: 20;
+        }
+
+        /* Animations */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hidden { display: none; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Fallback audio (in case YouTube iframe is blocked). Primary playback uses YouTube IFrame API to play requested segment -->
+    <audio id="bg-music" loop>
+        <source src="images/lagu.mp3" type="audio/mpeg">
+    </audio>
+    <!-- Hidden YouTube player for the requested segment (02:14 - 03:12) -->
+    <div id="yt-player" style="position:absolute;width:1px;height:1px;left:-9999px;top:-9999px;" aria-hidden="true"></div>
+
+    <div class="phone-container">
+        <div class="notch"></div>
+
+        <div id="lock-screen">
+            <div class="clock" id="clock">00:00</div>
+            <div class="date" id="date-text">Sunday, 14 February</div>
+            
+            <p style="color: #fff; margin-bottom: 20px; font-size: 0.9rem; opacity: 0.8;">Enter Passcode (Hari jadian kita)</p>
+            
+            <div class="passcode-container">
+                <!-- 6-digit passcode -->
+                <div class="passcode-dot"></div>
+                <div class="passcode-dot"></div>
+                <div class="passcode-dot"></div>
+                <div class="passcode-dot"></div>
+                <div class="passcode-dot"></div>
+                <div class="passcode-dot"></div>
+            </div>
+
+            <div class="numpad">
+                <button class="num-btn" onclick="enterPass(1)">1</button>
+                <button class="num-btn" onclick="enterPass(2)">2</button>
+                <button class="num-btn" onclick="enterPass(3)">3</button>
+                <button class="num-btn" onclick="enterPass(4)">4</button>
+                <button class="num-btn" onclick="enterPass(5)">5</button>
+                <button class="num-btn" onclick="enterPass(6)">6</button>
+                <button class="num-btn" onclick="enterPass(7)">7</button>
+                <button class="num-btn" onclick="enterPass(8)">8</button>
+                <button class="num-btn" onclick="enterPass(9)">9</button>
+                <button class="num-btn" style="visibility:hidden"> </button>
+                <button class="num-btn" onclick="enterPass(0)">0</button>
+                <button class="num-btn" style="font-size: 1rem" onclick="clearPass()">✖</button>
+            </div>
+        </div>
+
+        <div id="content-screen">
+            <!-- Back button is hidden by default; shown only during message view -->
+            <button class="back-btn" onclick="goBack()">← Back</button>
+            <div class="music-player" onclick="toggleMusic()">
+                <div class="album-cover" id="disk">
+                    <img id="album-img" src="images/album lagu 2.jpg" alt="Bruno Mars - Count On Me">
+                </div>
+                <div class="song-info">
+                    <h4>Count On Me — Bruno Mars</h4>
+                    <p class="from-text">from ibrahim</p>
+                </div>
+                <!-- tombol Change Cover dihapus sesuai permintaan -->
+             </div>
+
+            <div class="gallery-container" id="gallery">
+                  <div class="photo-card" style="transform: rotate(-5deg); z-index: 1;">
+                      <img src="images/foto selamanya.jpeg" alt="Foto 4">
+                      <p>Forever Us ❤️</p>
+                  </div>
+                  <div class="photo-card" style="transform: rotate(3deg); z-index: 2;">
+                      <img src="images/Bonus.jpeg" alt="Foto 5">
+                      <p>Bonus 🥰</p>
+                  </div>
+                  <div class="photo-card" style="transform: rotate(5deg); z-index: 4;">
+                      <img src="images/foto memories.jpeg" alt="Foto 2">
+                      <p>Memories 💖</p>
+                  </div>
+                  <div class="photo-card" style="transform: rotate(-7deg); z-index: 5;">
+                      <img src="images/foto momen canggung.jpeg" alt="Foto 3">
+                      <p>Akward Moment 😳</p>
+                  </div>
+                  <div class="photo-card" onclick="nextCard()" style="transform: rotate(-2deg); z-index: 3;">
+                      <img src="images/foto ulang tahun.jpeg" alt="Foto 1">
+                      <p>Happy Birthday! 🎂</p>
+                  </div>
+              </div>
+
+             <!-- Hint moved below gallery -->
+             <p class="gallery-hint">(Klik foto untuk liat yang lain!)</p>
+
+             <button class="next-btn" onclick="showMessage()">Read Message 💌</button>
+
+             <div class="message-box" id="final-msg">
+                <p id="message-sub" class="message-sub">dibaca yaaa sayangg</p>
+                 <p id="typing-effect"></p>
+             </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- KONFIGURASI --- */
+        const PASSCODE = "240724"; // 6-digit passcode
+        const MESSAGE = `alooo sayanggg👋🏻
+selamattt ulang tahunn yang ke-19!🥳
+semogaa keinginan kamuu segeraa tercapai yaaa dan selaluu diberi kemudahann dii setiap jalan yang kamuu pilih🌈. aku disini selauu doain yang terbaikkk buat kamu sayangg, it's okeyy sekarang lagi cape-capenyaa nyari duitt kannn kamu punyaa mimpii mauu jadi orang suksess. aku bersyukurr bangettt punyaa cewe sepertii kamuuu taukk kamu ituu selalu sempurnaa di mata akuu hehee😸. maapp yaaa kalo aku banyak salahnyaa ke kamuu soalnya kamu mesti ngelupain hal' kecil ku😔
+hmmm it'ss okeyyy semogaa setelah ini kamu jadi sadar dan menjadi pribadi yang lebih baikkk i always loving you pretty💗💗`;
+        // YouTube segment configuration: Count On Me — Bruno Mars
+        const YT_VIDEO_ID = "6k8cpUkKK4c";
+        const SEGMENT_START = 134; // 02:14 -> 134s
+        const SEGMENT_END = 192;   // 03:12 -> 192s
+
+        // playBtn will be created later; declare early to avoid ReferenceError
+        let playBtn = null;
+
+        /* --- LOGIC JAM --- */
+        function updateTime() {
+            const now = new Date();
+            // show real-time clock with AM/PM and full date including year
+            document.getElementById('clock').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+            document.getElementById('date-text').innerText = now.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        /* --- LOGIC PASSCODE --- */
+        let currentInput = "";
+        const dots = document.querySelectorAll('.passcode-dot');
+
+        function enterPass(num) {
+            if (currentInput.length < 6) {
+                currentInput += num;
+                updateDots();
+                if (currentInput.length === 6) checkPass();
+            }
+        }
+
+        function updateDots() {
+            dots.forEach((dot, index) => {
+                if (index < currentInput.length) {
+                    dot.style.background = "#fff";
+                } else {
+                    dot.style.background = "transparent";
+                }
+            });
+        }
+
+        function clearPass() {
+            currentInput = "";
+            updateDots();
+        }
+
+        function checkPass() {
+            if (currentInput === PASSCODE) {
+                // Sukses
+                document.getElementById('lock-screen').style.transform = "translateY(-100%)";
+                document.getElementById('content-screen').style.display = "flex";
+                // Try autoplay; if blocked, show play button for user gesture
+                (async () => {
+                    const ok = await playMusic();
+                    if (!ok) {
+                        console.info('Autoplay blocked — showing play button');
+                        if (playBtn) playBtn.classList.remove('hidden');
+                    }
+                })();
+            } else {
+                // Gagal
+                alert("Salah passwordnya sayang! Coba inget-inget ya 😝");
+                clearPass();
+            }
+        }
+
+        /* --- LOGIC MUSIC --- */
+        const audio = document.getElementById('bg-music'); // fallback
+        const disk = document.getElementById('disk');
+        let isPlaying = false;
+        let player = null;
+        let playerReady = false;
+
+        // Play button for user gesture when autoplay is blocked
+        playBtn = document.createElement('button');
+        playBtn.id = 'play-btn';
+        playBtn.textContent = 'Tap to Play Music';
+        playBtn.className = 'play-btn hidden';
+        document.getElementById('content-screen').appendChild(playBtn);
+
+        // basic styles for play button
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .play-btn {
+                position: absolute;
+                bottom: 28px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #ff6b8a;
+                color: white;
+                border: none;
+                padding: 10px 18px;
+                border-radius: 999px;
+                font-weight: 600;
+                cursor: pointer;
+                box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+            }
+            .hidden { display: none !important; }
+        `;
+        document.head.appendChild(style);
+
+        playBtn.addEventListener('click', async () => {
+            playBtn.classList.add('hidden');
+            await startPlaybackFromUserGesture();
+        });
+
+         // Load YouTube IFrame API
+         (function loadYouTubeAPI() {
+             const tag = document.createElement('script');
+             tag.src = "https://www.youtube.com/iframe_api";
+             document.head.appendChild(tag);
+         })();
+ 
+         function onYouTubeIframeAPIReady() {
+             player = new YT.Player('yt-player', {
+                 height: '1',
+                 width: '1',
+                 videoId: YT_VIDEO_ID,
+                 playerVars: {
+                     start: SEGMENT_START,
+                     end: SEGMENT_END,
+                     autoplay: 0,
+                     controls: 0,
+                     modestbranding: 1,
+                     rel: 0,
+                     playsinline: 1
+                 },
+                 events: {
+                     onReady: function(e) {
+                         try { e.target.mute(); } catch (err) {}
+                        playerReady = true;
+                     },
+                     onStateChange: function(e) {
+                         if (e.data === YT.PlayerState.ENDED) {
+                             try { e.target.seekTo(SEGMENT_START); e.target.playVideo(); } catch(e) {}
+                         }
+                     }
+                 }
+             });
+         }
+ 
+        async function playMusic() {
+            // Try YouTube player first
+            if (player && playerReady && typeof player.playVideo === 'function') {
+                try {
+                    // optimis: minta play, set class agar disk berputar segera
+                    player.playVideo();
+                    disk.classList.add('playing');
+                    isPlaying = true;
+                    // small delay then check state; if fails, caller will handle
+                    await new Promise(r => setTimeout(r, 400));
+                    const state = player.getPlayerState && player.getPlayerState();
+                    if (state === YT.PlayerState.PLAYING) return true;
+                } catch (e) {
+                    console.warn('YT play error', e);
+                    disk.classList.remove('playing');
+                    isPlaying = false;
+                }
+            }
+
+            // Fallback to HTMLAudioElement
+            try {
+                await audio.play();
+                disk.classList.add('playing');
+                isPlaying = true;
+                return true;
+            } catch (err) {
+                console.warn('audio play blocked or failed', err);
+                return false;
+            }
+        }
+
+        async function startPlaybackFromUserGesture() {
+            // user gesture: unmute then try to play
+            if (player && playerReady) {
+                try { player.unMute(); player.playVideo(); } catch(e) { console.warn(e); }
+            } else {
+                try { await audio.play(); } catch(e) { console.warn(e); }
+            }
+            disk.classList.add('playing');
+             isPlaying = true;
+         }
+ 
+         // Stop and reset any playback immediately
+         function stopMusic() {
+             try {
+                if (player && typeof player.stopVideo === 'function') {
+                    player.stopVideo(); // fully stop YT playback
+                    try { player.mute(); player.seekTo(SEGMENT_START, true); } catch(e) {}
+                } else if (player && typeof player.pauseVideo === 'function') {
+                    player.pauseVideo();
+                    try { player.mute(); player.seekTo(SEGMENT_START, true); } catch(e) {}
+                }
+            } catch (e) { console.warn('Error stopping YT player', e); }
+
+            try {
+                audio.pause();
+                audio.currentTime = 0; // reset fallback audio to start
+            } catch (e) {}
+
+            disk.classList.remove('playing');
+             isPlaying = false;
+             if (playBtn) playBtn.classList.add('hidden');
+         }
+ 
+          function toggleMusic() {
+              if (isPlaying) {
+                  if (player && typeof player.pauseVideo === 'function') player.pauseVideo();
+                  else audio.pause();
+                disk.classList.remove('playing');
+                  isPlaying = false;
+              } else {
+                  if (player && typeof player.playVideo === 'function') {
+                      try { player.unMute(); player.playVideo(); } catch(e) {}
+                  } else {
+                      audio.play().catch(()=>{});
+                  }
+                disk.classList.add('playing');
+                  isPlaying = true;
+              }
+         }
+         
+         const backBtn = document.querySelector('.back-btn'); // cached reference
+         if (backBtn) backBtn.style.display = 'none'; // ensure hidden on load
+
+         function goBack() {
+             // Do NOT stop music here — keep playback running while browsing gallery
+             // hide back button when leaving message
+             if (backBtn) backBtn.style.display = 'none';
+
+             // hide message box and reset typing text
+             const msgBox = document.getElementById('final-msg');
+             if (msgBox) {
+                 msgBox.style.display = 'none';
+                 document.getElementById('typing-effect').innerHTML = '';
+               const msgSub = document.getElementById('message-sub');
+               if (msgSub) msgSub.style.display = 'none';
+             }
+
+             // show gallery hint again
+             const hint = document.querySelector('.gallery-hint');
+             if (hint) hint.style.display = 'block';
+
+             // show gallery and next-btn again (stay in content-screen)
+             const gallery = document.getElementById('gallery');
+             if (gallery) gallery.style.display = 'block';
+             const nextBtn = document.querySelector('.next-btn');
+             if (nextBtn) nextBtn.style.display = 'inline-block';
+         }
+
+        /* --- LOGIC CARD STACK --- */
+        // robust stack handling
+        function nextCard() {
+            const parent = document.getElementById('gallery');
+            const cards = parent.querySelectorAll('.photo-card');
+            if (cards.length === 0) return;
+
+            const top = cards[cards.length - 1];
+            top.style.transform = "translateX(-200%) rotate(-20deg)";
+            top.style.opacity = "0";
+            top.onclick = null;
+
+            setTimeout(() => {
+                parent.insertBefore(top, parent.firstChild);
+                top.style.transition = 'none';
+                top.style.transform = `rotate(${Math.random() * 10 - 5}deg)`;
+                top.style.opacity = "1";
+                void top.offsetWidth; // reflow
+                top.style.transition = '';
+
+                const updated = parent.querySelectorAll('.photo-card');
+                updated.forEach((card, i) => {
+                    card.style.zIndex = i + 1;
+                    card.onclick = null;
+                });
+                if (updated.length > 0) updated[updated.length - 1].onclick = nextCard;
+            }, 350);
+        }
+
+        function initCards() {
+            const parent = document.getElementById('gallery');
+            const cards = parent.querySelectorAll('.photo-card');
+            cards.forEach((card, i) => card.style.zIndex = i + 1);
+            if (cards.length > 0) cards[cards.length - 1].onclick = nextCard;
+        }
+        initCards();
+
+        /* --- LOGIC MESSAGE --- */
+        function showMessage() {
+            document.querySelector('.next-btn').style.display = 'none';
+            document.getElementById('gallery').style.display = 'none';
+            // hide gallery hint when showing message
+            const hint = document.querySelector('.gallery-hint');
+            if (hint) hint.style.display = 'none';
+            // show the small header text on the message slide
+            const msgSub = document.getElementById('message-sub');
+            if (msgSub) msgSub.style.display = 'block';
+            const msgBox = document.getElementById('final-msg');
+            msgBox.style.display = 'block';
+            // show back button when message is visible
+            if (backBtn) backBtn.style.display = 'block';
+            
+            // Typewriter
+            let i = 0;
+            const speed = 50;
+            function typeWriter() {
+                if (i < MESSAGE.length) {
+                    const char = MESSAGE.charAt(i);
+                    document.getElementById("typing-effect").innerHTML += char === '\n' ? '<br>' : char;
+                    i++;
+                    setTimeout(typeWriter, speed);
+                }
+            }
+            typeWriter();
+
+            // Confetti
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        // set album cover (call this with your uploaded image URL)
+        function setAlbumCover(url, alt='') {
+            const img = document.getElementById('album-img');
+            if (!img) return;
+            // default ke gambar lokal jika tidak ada url
+            if (!url) url = 'images/album lagu 2.jpg';
+            const src = encodeURI(url);
+            // preload to ensure consistent behavior across browsers
+            const tmp = new Image();
+            tmp.onload = () => {
+                img.src = src;
+                img.alt = alt || img.alt || '';
+            };
+            tmp.onerror = () => {
+                img.src = 'images/album lagu 2.jpg';
+                img.alt = 'Bruno Mars - Count On Me';
+            };
+            tmp.src = src;
+        }
+        
+        // gunakan gambar lokal default
+        setAlbumCover('images/album lagu 2.jpg', 'Bruno Mars - Count On Me');
+
+        // allow gallery clicks to change album cover (use attribute src, encode & preload)
+        document.querySelectorAll('#gallery .photo-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const imgEl = card.querySelector('img');
+                if (!imgEl) return;
+                const srcAttr = imgEl.getAttribute('src') || '';
+                const alt = imgEl.getAttribute('alt') || 'Album cover';
+                if (!srcAttr) return setAlbumCover('', alt);
+                const src = encodeURI(srcAttr);
+                const tmp = new Image();
+                tmp.onload = () => setAlbumCover(src, alt);
+                tmp.onerror = () => setAlbumCover('', alt);
+                tmp.src = src;
+            });
+        });
+    </script>
+</body>
+</html>
